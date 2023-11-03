@@ -1,0 +1,112 @@
+//At Arduino simple Test code for Go and STOP
+
+#include <Wire.h>
+#include <Servo.h>
+#include <SoftwareSerial.h>
+
+// Motor pins
+const int Fr_R_EN = 2;
+const int Fr_R_in1 = 30;
+const int Fr_R_in2 = 28;
+const int Fr_L_EN = 3;
+const int Fr_L_in1 = 26;
+const int Fr_L_in2 = 24;
+
+const int Mid_R_EN = 4;
+const int Mid_R_in1 = 33;
+const int Mid_R_in2 = 35;
+const int Mid_L_EN = 5;
+const int Mid_L_in1 = 37;
+const int Mid_L_in2 = 39;
+
+const int Re_R_EN = 8;
+const int Re_R_in1 = 40;
+const int Re_R_in2 = 42;
+const int Re_L_EN = 9;
+const int Re_L_in1 = 44;
+const int Re_L_in2 = 46;
+
+const int speedIncrement = 10;
+const int motorMaxSpeed = 255;
+
+void setup() {
+  Serial.begin(9600);
+  setupMotorPins();
+}
+
+void loop() {
+  if (Serial.available()) {
+    char in_data = Serial.read();
+    Serial.print("data: ");
+    Serial.println(in_data);
+
+    switch (in_data) {
+      case 'w':
+        speedUp();
+        turnOnMotors();
+        break;
+
+      case 's':
+        turnOffMotors();
+        break;
+
+      default:
+        break;
+    }
+  }
+}
+
+void setupMotorPins() {
+  int motorPins[] = {
+    Fr_R_EN, Fr_R_in1, Fr_R_in2, Fr_L_EN, Fr_L_in1, Fr_L_in2,
+    Mid_R_EN, Mid_R_in1, Mid_R_in2, Mid_L_EN, Mid_L_in1, Mid_L_in2,
+    Re_R_EN, Re_R_in1, Re_R_in2, Re_L_EN, Re_L_in1, Re_L_in2
+  };
+
+  for (int i = 0; i < sizeof(motorPins) / sizeof(motorPins[0]); i++) {
+    pinMode(motorPins[i], OUTPUT);
+  }
+
+  for (int i = 1; i < sizeof(motorPins) / sizeof(motorPins[0]); i++) {
+    digitalWrite(motorPins[i], LOW);
+  }
+}
+
+void speedUp() {
+  int speed = analogRead(Fr_R_EN) + speedIncrement;
+  speed = min(speed, motorMaxSpeed);
+  
+  analogWrite(Fr_R_EN, speed);
+  analogWrite(Fr_L_EN, speed);
+  analogWrite(Mid_R_EN, speed);
+  analogWrite(Mid_L_EN, speed);
+  analogWrite(Re_R_EN, speed);
+  analogWrite(Re_L_EN, speed);
+}
+
+void turnOnMotors() {
+  digitalWrite(Fr_R_in1, HIGH);
+  digitalWrite(Fr_R_in2, LOW);
+  digitalWrite(Fr_L_in1, HIGH);
+  digitalWrite(Fr_L_in2, LOW);
+  digitalWrite(Mid_R_in1, HIGH);
+  digitalWrite(Mid_R_in2, LOW);
+  digitalWrite(Mid_L_in1, HIGH);
+  digitalWrite(Mid_L_in2, LOW);
+  digitalWrite(Re_R_in1, HIGH);
+  digitalWrite(Re_R_in2, LOW);
+  digitalWrite(Re_L_in1, HIGH);
+  digitalWrite(Re_L_in2, LOW);
+}
+
+void turnOffMotors() {
+  int motorPins[] = {
+    Fr_R_in1, Fr_R_in2, Fr_L_in1, Fr_L_in2,
+    Mid_R_in1, Mid_R_in2, Mid_L_in1, Mid_L_in2,
+    Re_R_in1, Re_R_in2, Re_L_in1, Re_L_in2
+  };
+
+  for (int i = 0; i < sizeof(motorPins) / sizeof(motorPins[0]); i++) {
+    digitalWrite(motorPins[i], LOW);
+  }
+}
